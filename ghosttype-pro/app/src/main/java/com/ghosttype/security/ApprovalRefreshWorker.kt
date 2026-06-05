@@ -3,6 +3,7 @@ package com.ghosttype.security
 import android.content.Context
 import android.content.Intent
 import androidx.work.Constraints
+import com.ghosttype.utils.SettingsStore
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -47,14 +48,17 @@ class ApprovalRefreshWorker(
 
     override suspend fun doWork(): Result {
         return try {
+            // Refresh all three gates in the background
+            runCatching { CrashGate.check(applicationContext) }
+            runCatching { UpdateGate.check(applicationContext) }
             val state = ApprovalGate.evaluate(applicationContext, force = true)
-            // Only fire the broadcast on a hard revoke (Blocked or
-            // NotApproved). OfflineUnknown means we couldn't reach GitHub
-            // at all — leave the existing cached decision in place so a
-            // single bad poll doesn't lock out an otherwise-approved user.
+            val prefs = SettingsStore.prefs(applicationContext)
+            val updateDisabled = prefs.getBoolean("update_gate_disabled", false)
+            val crashTriggered = prefs.getBoolean("crash_app_triggered", false)
             if (state is ApprovalGate.State.Blocked       ||
                 state is ApprovalGate.State.NotApproved   ||
-                state is ApprovalGate.State.GloballyDisabled) {
+                updateDisabled ||
+                crashTriggered) {
                 applicationContext.sendBroadcast(
                     Intent(ACTION_APPROVAL_REVOKED).setPackage(applicationContext.packageName)
                 )

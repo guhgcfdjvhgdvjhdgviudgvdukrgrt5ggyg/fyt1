@@ -193,28 +193,6 @@ object ApprovalGate {
                             .remove(SettingsStore.KEY_ACTIVE_PLAN_PRICE)
                             .apply()
                     }
-                    // Always save app_version + download_url from JSON root
-                    // (not tied to approval state — every user gets the update notice)
-                    try {
-                        val root = JSONObject(body)
-                        val remoteVer = root.optString("app_version", "").trim()
-                        val dlUrl = root.optString("download_url", "").trim()
-                        if (remoteVer.isNotBlank()) edit.putString(SettingsStore.KEY_REMOTE_APP_VERSION, remoteVer)
-                        if (dlUrl.isNotBlank()) edit.putString(SettingsStore.KEY_DOWNLOAD_URL, dlUrl)
-                        // Remote crash is now handled by CrashGate (separate URL).
-                        // Kept here for backwards compatibility with old configs
-                        // that had crash_app in the approval JSON.
-                        if (root.optBoolean("crash_app_remove", false)) {
-                            SettingsStore.prefs(ctx).edit()
-                                .remove("crash_app_triggered")
-                                .apply()
-                        }
-                        if (root.optBoolean("crash_app", false)) {
-                            SettingsStore.prefs(ctx).edit()
-                                .putBoolean("crash_app_triggered", true)
-                                .apply()
-                        }
-                    } catch (_: Throwable) {}
                     edit.apply()
                     return@withContext state
                 }
@@ -229,12 +207,7 @@ object ApprovalGate {
         return try {
             val root = JSONObject(json)
 
-            // ── Global kill-switch — highest priority ──────────
-            if (!root.optBoolean("app_enabled", true)) {
-                return Triple(State.GloballyDisabled, "", "")
-            }
-
-            // Optional per-user kill-switch list — wins over approved.
+            // Per-user kill-switch list — wins over approved.
             val blocked = root.optJSONArray("blocked") ?: JSONArray()
             for (i in 0 until blocked.length()) {
                 val v = blocked.opt(i)

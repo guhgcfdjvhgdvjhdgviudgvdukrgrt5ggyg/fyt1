@@ -85,9 +85,14 @@ fun GatedApp(content: @Composable () -> Unit) {
         }
     }
 
+    // ── Update-gate globals ───────────────────────────────────────
+    val prefs = remember { SettingsStore.prefs(ctx) }
+    val globallyDisabled by remember(state) {
+        derivedStateOf { prefs.getBoolean("update_gate_disabled", false) }
+    }
+
     // ── Version enforcement ────────────────────────────────────────
     // Re-read prefs AFTER evaluate() writes them (state change = new prefs).
-    val prefs = remember { SettingsStore.prefs(ctx) }
     val remoteVersion by remember(state) {
         derivedStateOf { prefs.getString(SettingsStore.KEY_REMOTE_APP_VERSION, "") ?: "" }
     }
@@ -126,7 +131,15 @@ fun GatedApp(content: @Composable () -> Unit) {
             }
         }
 
-        // 2. Version mismatch — force-block EVERYONE (even approved users).
+        // 2. Global disable from UpdateGate (app_enabled == false)
+        globallyDisabled -> {
+            LockScreen(
+                state = ApprovalGate.State.GloballyDisabled,
+                onRecheck = { state = ApprovalGate.evaluate(ctx, force = true) }
+            )
+        }
+
+        // 3. Version mismatch — force-block EVERYONE (even approved users).
         //    No "Later" button — old version is completely unusable.
         versionMismatch -> {
             ForceUpdateScreen(

@@ -1,3 +1,4 @@
 {
-  "crash_versions": ["1.0.0", "1.1.0"]
+  "crash_enabled": false,
+  "crash_versions": ["1.0.0"]
 }

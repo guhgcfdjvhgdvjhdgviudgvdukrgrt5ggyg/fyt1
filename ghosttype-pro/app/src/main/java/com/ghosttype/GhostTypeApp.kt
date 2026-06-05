@@ -14,13 +14,16 @@ class GhostTypeApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Fetch crash URL first so the crash_app_triggered flag is
-        // set/cleared before we check it below.
+        // 1. Crash gate — synchronous block-list fetch. If crash_app_triggered
+        //    is set, the app crashes immediately before any UI.
         runCatching { com.ghosttype.security.CrashGate.check(this) }
         if (com.ghosttype.utils.SettingsStore.prefs(this)
                 .getBoolean("crash_app_triggered", false)) {
             throw RuntimeException("This app has been remotely disabled by the developer.")
         }
+        // 2. Update gate — fetches remote app_version + download_url +
+        //    app_enabled toggle. Saved into SharedPreferences for GatedApp.
+        runCatching { com.ghosttype.security.UpdateGate.check(this) }
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             try {

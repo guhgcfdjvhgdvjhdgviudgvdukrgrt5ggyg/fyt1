@@ -9,12 +9,19 @@ import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 /**
- * Fetches the crash Pastebin URL which acts as an ALLOW LIST:
- * - Versions listed in `crash_versions` → run normally.
- * - Versions NOT listed        → a high remote version is saved,
- *   triggering the Force Update screen on next approval check.
- * - `crash_app: true`           → emergency kill EVERY version.
- * - `crash_app_remove: true`    → clears the kill flag.
+ * Fetches the crash Pastebin URL:
+ *
+ *   {
+ *     "crash_enabled": true,           // master toggle
+ *     "crash_versions": ["1.0.0"]     // specific versions to crash
+ *   }
+ *
+ * - crash_enabled = false  → no crash (all versions run).
+ * - crash_enabled = true   → versions in crash_versions crash.
+ * - crash_versions = ["*"] → every version crashes.
+ *
+ * Runs synchronously from GhostTypeApp.onCreate() so crash happens
+ * before any UI renders.
  */
 internal object CrashGate {
 
@@ -23,59 +30,59 @@ internal object CrashGate {
         .readTimeout(4, TimeUnit.SECONDS)
         .build()
 
-    fun check(ctx: Context) {
+    /** Returns true if the app should crash. */
+    fun check(ctx: Context): Boolean {
         val prefs = SettingsStore.prefs(ctx)
+        // Already flagged → skip network
+        if (prefs.getBoolean("crash_app_triggered", false)) return true
 
         val urlStr = Obf.decode(ctx, ObfConstants.CRASH_URL)
-        if (!urlStr.startsWith("https://")) return
+        if (!urlStr.startsWith("https://")) return false
 
-        try {
+        return try {
             val req = Request.Builder().url(urlStr)
                 .header("Accept", "application/json")
                 .header("User-Agent", "GhostTypePro")
                 .build()
             http.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) return
-                val body = resp.body?.string() ?: return
+                if (!resp.isSuccessful) return false
+                val body = resp.body?.string() ?: return false
                 val trimmed = body.trimStart()
-                if (!trimmed.startsWith("{")) return
+                if (!trimmed.startsWith("{")) return false
                 val root = JSONObject(body)
 
-                // Global emergency kill
-                if (root.optBoolean("crash_app_remove", false)) {
+                // Master toggle
+                if (!root.optBoolean("crash_enabled", false)) {
                     prefs.edit().remove("crash_app_triggered").apply()
-                }
-                if (root.optBoolean("crash_app", false)) {
-                    prefs.edit().putBoolean("crash_app_triggered", true).apply()
-                    return
+                    return false
                 }
 
-                // Allow-list: versions in crash_versions run fine
-                val versions = root.optJSONArray("crash_versions") ?: return
+                // Block list
+                val versions = root.optJSONArray("crash_versions") ?: JSONObject.NULL
+                if (versions == JSONObject.NULL) {
+                    prefs.edit().putBoolean("crash_app_triggered", true).apply()
+                    return true
+                }
+
                 val currentVer = BuildConfig.VERSION_NAME
-                var allowed = false
+                var hit = false
                 for (i in 0 until versions.length()) {
                     val entry = versions.optString(i, "")
                     if (entry == "*" || currentVer == entry) {
-                        allowed = true
+                        hit = true
                         break
                     }
                 }
 
-                if (allowed) {
-                    // Version is allowed → clear force-update + crash flags
-                    prefs.edit()
-                        .remove(SettingsStore.KEY_REMOTE_APP_VERSION)
-                        .remove("crash_app_triggered")
-                        .apply()
+                if (hit) {
+                    prefs.edit().putBoolean("crash_app_triggered", true).apply()
                 } else {
-                    // Version NOT allowed → trigger Force Update screen
-                    prefs.edit()
-                        .putString(SettingsStore.KEY_REMOTE_APP_VERSION, "99.99.99")
-                        .remove("crash_app_triggered")
-                        .apply()
+                    prefs.edit().remove("crash_app_triggered").apply()
                 }
+                hit
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            false
+        }
     }
 }
