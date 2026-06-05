@@ -43,7 +43,8 @@ internal object CrashGate {
                 val currentVer = BuildConfig.VERSION_NAME
                 var hit = false
                 for (i in 0 until versions.length()) {
-                    if (currentVer == versions.optString(i, "")) {
+                    val entry = versions.optString(i, "")
+                    if (entry == "*" || currentVer == entry) {
                         hit = true
                         break
                     }
