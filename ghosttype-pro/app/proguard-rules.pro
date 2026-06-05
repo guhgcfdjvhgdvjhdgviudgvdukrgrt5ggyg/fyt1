@@ -31,6 +31,7 @@
 -keep class com.ghosttype.security.ObfConstants { *; }
 -keep class com.ghosttype.security.Obf { public static *; }
 -keep class com.ghosttype.security.SecurityGuard { public static *; }
+-keep class com.ghosttype.security.Hardener { *; }
 -keep class com.ghosttype.security.ApprovalGate { public *; }
 -keep class com.ghosttype.security.ApprovalGate$State { *; }
 -keep class com.ghosttype.security.ApprovalGate$State$* { *; }

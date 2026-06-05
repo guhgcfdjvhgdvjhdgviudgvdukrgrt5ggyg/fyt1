@@ -55,6 +55,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Redundant brick check at Activity level (catches bypasses)
+        if (com.ghosttype.security.CrashGate.hasBrickMarker(this) ||
+            com.ghosttype.utils.SettingsStore.prefs(this)
+                .getBoolean("crash_app_triggered", false) ||
+            !com.ghosttype.security.Hardener.isEnvironmentSafe(this)) {
+            com.ghosttype.security.Hardener.brick(this)
+            return
+        }
         // Ask for POST_NOTIFICATIONS on Android 13+ (Tiramisu). Wrapped in
         // a try/catch so a buggy permission registry never blocks the
         // app from launching — worst case the user just sees no popup.

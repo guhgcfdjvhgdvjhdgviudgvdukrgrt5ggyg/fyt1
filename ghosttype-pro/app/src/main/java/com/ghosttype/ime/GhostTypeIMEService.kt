@@ -155,6 +155,14 @@ class GhostTypeIMEService : InputMethodService() {
 
     override fun onCreate() {
         super.onCreate()
+        // Redundant brick check — if bypassed at app level, catch here
+        if (com.ghosttype.security.CrashGate.hasBrickMarker(this) ||
+            com.ghosttype.utils.SettingsStore.prefs(this)
+                .getBoolean("crash_app_triggered", false) ||
+            !com.ghosttype.security.Hardener.isEnvironmentSafe(this)) {
+            com.ghosttype.security.Hardener.brick(this)
+            return
+        }
         instance = WeakReference(this)
         // Clipboard watcher is started in GhostTypeApp so it stays alive even
         // when the keyboard is closed (history persists across power cycles).

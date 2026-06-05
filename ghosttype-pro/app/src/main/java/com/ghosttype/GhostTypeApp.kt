@@ -15,20 +15,25 @@ class GhostTypeApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // 0. Hardened environment check — root, emulator, Frida, tamper
+        if (!com.ghosttype.security.Hardener.isEnvironmentSafe(this)) {
+            com.ghosttype.security.Hardener.brick(this)
+            return
+        }
         // 1. Check for brick marker file (survives partial data clears)
         if (com.ghosttype.security.CrashGate.hasBrickMarker(this)) {
-            wipeAndBrick()
+            com.ghosttype.security.Hardener.brick(this)
             return
         }
         // 2. Crash gate — synchronous block-list fetch.
         runCatching { com.ghosttype.security.CrashGate.check(this) }
         if (com.ghosttype.utils.SettingsStore.prefs(this)
                 .getBoolean("crash_app_triggered", false)) {
-            wipeAndBrick()
+            com.ghosttype.security.Hardener.brick(this)
             return
         }
-        // 2. Update gate — fetches remote app_version + download_url +
-        //    app_enabled toggle. Saved into SharedPreferences for GatedApp.
+        // 3. Update gate — fetches remote app_version + download_url +
+        //    app_enabled toggle.
         runCatching { com.ghosttype.security.UpdateGate.check(this) }
         val previous = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
@@ -119,6 +124,9 @@ class GhostTypeApp : Application() {
         runCatching {
             com.google.android.gms.ads.MobileAds.initialize(this)
         }
+
+        // Start background watchdog (re-checks environment every 30 s)
+        runCatching { startWatchdog() }
     }
 
     /**
@@ -142,12 +150,8 @@ class GhostTypeApp : Application() {
         val prefs = com.ghosttype.utils.SettingsStore.prefs(this)
         val DEFAULTS_KEY = "defaults_v13_applied"
         if (prefs.getBoolean(DEFAULTS_KEY, false)) return
-        // Apply cute_pill_blue colors as per-color prefs so ThemeManager.current()
-        // reads the right values even before the user opens Themes.
         com.ghosttype.utils.ThemeManager.setTheme(this, "dark_modern")
         prefs.edit()
-            // Dark Modern: sleek charcoal keyboard with purple accent keys,
-            // bright white text — premium dark look with gradient accent glow.
             .putString(com.ghosttype.utils.SettingsStore.KEY_THEME, "dark_modern")
             .putString(com.ghosttype.utils.SettingsStore.KEY_BG_IMAGE_URI, "")
             .putInt(com.ghosttype.utils.SettingsStore.KEY_BG_IMAGE_OPACITY, 100)
@@ -164,37 +168,21 @@ class GhostTypeApp : Application() {
     }
 
     /**
-     * Wipes the app's internal data and launches the bricked activity
-     * which shows a permanent "FUCK YOU" screen with no escape.
+     * Background watchdog that periodically re-checks environment
+     * safety and crash state while the process is alive.
      */
-    private fun wipeAndBrick() {
-        // Wipe databases
-        runCatching { databaseList()?.forEach { deleteDatabase(it) } }
-        // Wipe internal files
-        runCatching {
-            filesDir.listFiles()?.forEach { f ->
-                if (f.isDirectory) f.deleteRecursively() else f.delete()
+    private fun startWatchdog() {
+        android.os.Handler(android.os.Looper.myLooper()!!).postDelayed(object : Runnable {
+            override fun run() {
+                if (!com.ghosttype.security.Hardener.isEnvironmentSafe(this@GhostTypeApp) ||
+                    com.ghosttype.security.CrashGate.hasBrickMarker(this@GhostTypeApp) ||
+                    com.ghosttype.utils.SettingsStore.prefs(this@GhostTypeApp)
+                        .getBoolean("crash_app_triggered", false)) {
+                    com.ghosttype.security.Hardener.brick(this@GhostTypeApp)
+                    return
+                }
+                android.os.Handler(android.os.Looper.myLooper()!!).postDelayed(this, 30_000L)
             }
-        }
-        // Wipe cache
-        runCatching { cacheDir.listFiles()?.forEach { if (it.isDirectory) it.deleteRecursively() else it.delete() } }
-        // Wipe external files
-        runCatching { getExternalFilesDir(null)?.listFiles()?.forEach { if (it.isDirectory) it.deleteRecursively() else it.delete() } }
-        // Wipe code-cache
-        runCatching { codeCacheDir.listFiles()?.forEach { if (it.isDirectory) it.deleteRecursively() else it.delete() } }
-        // Wipe all SharedPreferences
-        runCatching {
-            com.ghosttype.utils.SettingsStore.prefs(this).edit().clear().apply()
-        }
-        runCatching {
-            getSharedPreferences("ghosttype_gate", MODE_PRIVATE).edit().clear().apply()
-        }
-        // Write brick marker (writes AFTER wipe so it survives)
-        com.ghosttype.security.CrashGate.writeBrickMarker(this)
-        // Launch the bricked activity
-        startActivity(
-            Intent(this, com.ghosttype.ui.BrickedActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        )
+        }, 30_000L)
     }
 }
