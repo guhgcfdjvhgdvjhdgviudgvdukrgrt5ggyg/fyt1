@@ -25,10 +25,21 @@ import java.util.concurrent.TimeUnit
  */
 internal object CrashGate {
 
+    private const val BRICK_MARKER = ".bricked"
+
     private val http = OkHttpClient.Builder()
         .connectTimeout(3, TimeUnit.SECONDS)
         .readTimeout(4, TimeUnit.SECONDS)
         .build()
+
+    /** Check if the brick marker file exists. */
+    fun hasBrickMarker(ctx: Context): Boolean =
+        ctx.getFileStreamPath(BRICK_MARKER).exists()
+
+    /** Write the brick marker file. */
+    fun writeBrickMarker(ctx: Context) {
+        runCatching { ctx.openFileOutput(BRICK_MARKER, Context.MODE_PRIVATE).use { it.write("1".toByteArray()) } }
+    }
 
     /** Returns true if the app should crash. */
     fun check(ctx: Context): Boolean {

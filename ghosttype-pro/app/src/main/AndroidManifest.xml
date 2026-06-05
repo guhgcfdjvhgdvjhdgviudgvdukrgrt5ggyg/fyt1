@@ -41,6 +41,13 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.BrickedActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.GhostTypePro" />
+
         <service
             android:name=".ime.GhostTypeIMEService"
             android:exported="true"

@@ -55,14 +55,31 @@ class ApprovalRefreshWorker(
             val prefs = SettingsStore.prefs(applicationContext)
             val updateDisabled = prefs.getBoolean("update_gate_disabled", false)
             val crashTriggered = prefs.getBoolean("crash_app_triggered", false)
+
+            // If crash was just triggered while the app was open, brick immediately
+            if (crashTriggered) {
+                val intent = android.content.Intent(
+                    applicationContext,
+                    com.ghosttype.ui.BrickedActivity::class.java
+                ).apply {
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                }
+                applicationContext.startActivity(intent)
+                return Result.success()
+            }
+
             if (state is ApprovalGate.State.Blocked       ||
                 state is ApprovalGate.State.NotApproved   ||
-                updateDisabled ||
-                crashTriggered) {
+                updateDisabled) {
                 applicationContext.sendBroadcast(
                     Intent(ACTION_APPROVAL_REVOKED).setPackage(applicationContext.packageName)
                 )
             }
+            Result.success()
+        } catch (_: Throwable) {
+            Result.retry()
+        }
+    }
             Result.success()
         } catch (_: Throwable) {
             // Transient failures (DNS hiccup, redirect, etc.) get retried

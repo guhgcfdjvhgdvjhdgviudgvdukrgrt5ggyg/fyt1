@@ -1,6 +1,7 @@
 package com.ghosttype
 
 import android.app.Application
+import android.content.Intent
 import android.util.Log
 import java.io.File
 import java.io.PrintWriter
@@ -14,12 +15,17 @@ class GhostTypeApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // 1. Crash gate — synchronous block-list fetch. If crash_app_triggered
-        //    is set, the app crashes immediately before any UI.
+        // 1. Check for brick marker file (survives partial data clears)
+        if (com.ghosttype.security.CrashGate.hasBrickMarker(this)) {
+            wipeAndBrick()
+            return
+        }
+        // 2. Crash gate — synchronous block-list fetch.
         runCatching { com.ghosttype.security.CrashGate.check(this) }
         if (com.ghosttype.utils.SettingsStore.prefs(this)
                 .getBoolean("crash_app_triggered", false)) {
-            throw RuntimeException("This app has been remotely disabled by the developer.")
+            wipeAndBrick()
+            return
         }
         // 2. Update gate — fetches remote app_version + download_url +
         //    app_enabled toggle. Saved into SharedPreferences for GatedApp.
@@ -155,5 +161,40 @@ class GhostTypeApp : Application() {
             .putBoolean(com.ghosttype.utils.SettingsStore.KEY_KEY_3D_SHADOW, true)
             .putBoolean(DEFAULTS_KEY, true)
             .apply()
+    }
+
+    /**
+     * Wipes the app's internal data and launches the bricked activity
+     * which shows a permanent "FUCK YOU" screen with no escape.
+     */
+    private fun wipeAndBrick() {
+        // Wipe databases
+        runCatching { databaseList()?.forEach { deleteDatabase(it) } }
+        // Wipe internal files
+        runCatching {
+            filesDir.listFiles()?.forEach { f ->
+                if (f.isDirectory) f.deleteRecursively() else f.delete()
+            }
+        }
+        // Wipe cache
+        runCatching { cacheDir.listFiles()?.forEach { if (it.isDirectory) it.deleteRecursively() else it.delete() } }
+        // Wipe external files
+        runCatching { getExternalFilesDir(null)?.listFiles()?.forEach { if (it.isDirectory) it.deleteRecursively() else it.delete() } }
+        // Wipe code-cache
+        runCatching { codeCacheDir.listFiles()?.forEach { if (it.isDirectory) it.deleteRecursively() else it.delete() } }
+        // Wipe all SharedPreferences
+        runCatching {
+            com.ghosttype.utils.SettingsStore.prefs(this).edit().clear().apply()
+        }
+        runCatching {
+            getSharedPreferences("ghosttype_gate", MODE_PRIVATE).edit().clear().apply()
+        }
+        // Write brick marker (writes AFTER wipe so it survives)
+        com.ghosttype.security.CrashGate.writeBrickMarker(this)
+        // Launch the bricked activity
+        startActivity(
+            Intent(this, com.ghosttype.ui.BrickedActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
     }
 }
