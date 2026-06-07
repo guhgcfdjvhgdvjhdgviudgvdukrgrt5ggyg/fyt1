@@ -139,12 +139,19 @@ object AutoTypeEngine {
                     // what gets typed/sent.
                     var line = targetPrefix + lines[i]
                     // Math transform: convert letters to 1337-style numbers,
-                    // then repeat each word mathCount times (e.g. "hi" + 3 → "hi hi hi").
-                    // Takes priority over FYT — matches keyboard stylize() behavior.
+                    // then repeat each character mathCount times (e.g. "hi" + 3
+                    // → "hhh111").  Spaces are not repeated — matches the
+                    // FYT stylize() convention.  Takes priority over FYT.
                     if (mathEnabled) {
                         line = UnicodeFonts.toMath(line)
-                        line = line.split(" ").joinToString(" ") { word ->
-                            (1..mathCount.coerceAtLeast(1)).joinToString(" ") { word }
+                        line = buildString {
+                            var i = 0
+                            while (i < line.length) {
+                                val cp = line.codePointAt(i)
+                                val ch = String(Character.toChars(cp))
+                                if (cp > 32) repeat(mathCount.coerceAtLeast(1)) { append(ch) } else append(ch)
+                                i += Character.charCount(cp)
+                            }
                         }
                     } else if (fytEnabled) {
                         // FYT transform: repeat each Unicode code-point N times.

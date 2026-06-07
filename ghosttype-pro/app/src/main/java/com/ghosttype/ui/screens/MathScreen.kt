@@ -117,7 +117,7 @@ fun MathScreen() {
                     fontSize = 16.sp
                 )
                 Text(
-                    "Each word typed this many times",
+                    "Each character typed this many times",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp
                 )
