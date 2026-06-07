@@ -60,7 +60,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 
-enum class PanelMode { KEYS, EMOJI, AUTOTYPE, TOOLS, CLIPBOARD, MATH, FYT, CAPS, POINTER }
+enum class PanelMode { KEYS, EMOJI, AUTOTYPE, TOOLS, CLIPBOARD, MATH, FYT, CAPS, POINTER, FONT }
 
 // ── Cute keyboard sticker / number-hint data ────────────────────────────────
 // NUMBER_HINTS: small number shown at top-left of Q-P keys (matches the
@@ -431,7 +431,7 @@ class KeyboardView(
         ToolAction("🔁", if (prefs.getBoolean(SettingsStore.KEY_FYT_ENABLED, false)) "FYT ✓" else "FYT",
             iconRes = R.drawable.ic_tool_fyt, tintIcon = true) { showFytPanel() },
         ToolAction("⬆",  "Caps",      iconRes = R.drawable.ic_tool_caps,        tintIcon = true) { showCapsPanel() },
-        ToolAction("Aa", "Font",      iconRes = R.drawable.ic_tool_font,      tintIcon = true) { v -> showFontPicker(v) },
+        ToolAction("Aa", "Font",      iconRes = R.drawable.ic_tool_font,      tintIcon = true) { showFontPanel() },
         ToolAction("📋", "Clipboard", iconRes = R.drawable.ic_tool_clipboard,  tintIcon = true) { showClipboardPanel() },
         ToolAction("💣", "Auto-Type", iconRes = R.drawable.ic_tool_autotype,   tintIcon = true) { showAutoTypePanel() },
         ToolAction("😀", "Emoji",     iconRes = R.drawable.ic_tool_emoji,      tintIcon = true) { showEmojiPanel() },
@@ -499,6 +499,7 @@ class KeyboardView(
                 PanelMode.FYT -> rebuildFyt()
                 PanelMode.CAPS -> rebuildCaps()
                 PanelMode.POINTER -> rebuildPointer()
+                PanelMode.FONT -> rebuildFont()
                 PanelMode.TOOLS -> rebuildTools()
                 PanelMode.CLIPBOARD -> rebuildClipboard()
             }
@@ -939,6 +940,11 @@ class KeyboardView(
     private fun showPointerPanel() {
         panelMode = PanelMode.POINTER
         rebuildPointer()
+    }
+
+    private fun showFontPanel() {
+        panelMode = PanelMode.FONT
+        rebuildFont()
     }
 
     private fun rebuild() {
@@ -2142,6 +2148,98 @@ class KeyboardView(
         panelContainer.addView(root, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
     }
 
+    private fun rebuildFont() {
+        panelContainer.removeAllViews()
+        val pad = dp(14)
+        val keyHeight = prefs.getInt(SettingsStore.KEY_KEY_HEIGHT_DP, 50).coerceIn(36, 80)
+        val totalH = maxOf(dp(keyHeight) * 6, dp(320))
+
+        val scroll = ScrollView(context).apply {
+            setBackgroundColor(theme.keyboardBg)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, totalH)
+        }
+        val root = LinearLayout(context).apply {
+            orientation = VERTICAL
+            setPadding(pad, pad, pad, pad)
+        }
+
+        // ===== HEADER =====
+        root.addView(TextView(context).apply {
+            text = "Aa Font"
+            setTextColor(theme.accent)
+            textSize = 18f
+            setTypeface(null, Typeface.BOLD)
+        })
+
+        // ===== Bold / Italic / Default =====
+        val toggleRow = LinearLayout(context).apply {
+            orientation = HORIZONTAL
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(40))
+            setPadding(0, dp(10), 0, 0)
+        }
+        val boldOn = prefs.getBoolean(SettingsStore.KEY_FONT_BOLD, false)
+        val italicOn = prefs.getBoolean(SettingsStore.KEY_FONT_ITALIC, false)
+        toggleRow.addView(makePill(if (boldOn) "Bold ✓" else "Bold ✗") {
+            prefs.edit().putBoolean(SettingsStore.KEY_FONT_BOLD, !boldOn).apply()
+            reload()
+        }, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
+        toggleRow.addView(makePill(if (italicOn) "Italic ✓" else "Italic ✗") {
+            prefs.edit().putBoolean(SettingsStore.KEY_FONT_ITALIC, !italicOn).apply()
+            reload()
+        }, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
+        toggleRow.addView(makePill("Default") {
+            FontManager.setActive(context, null)
+            prefs.edit()
+                .putBoolean(SettingsStore.KEY_FONT_BOLD, false)
+                .putBoolean(SettingsStore.KEY_FONT_ITALIC, false)
+                .apply()
+            reload()
+            Toast.makeText(context, "Font reset to system default", Toast.LENGTH_SHORT).show()
+        }, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
+        root.addView(toggleRow)
+
+        // ===== Output styles =====
+        root.addView(sectionHeader("Output style (works in chat apps)"))
+        val activeStyleId = prefs.getString(SettingsStore.KEY_FONT_STYLE, "normal")
+        UnicodeFonts.STYLES_ALL.forEach { st ->
+            root.addView(unicodeStyleRow(st, st.id == activeStyleId) {
+                UnicodeFonts.setActive(context, st.id)
+                Toast.makeText(context, "Output style: ${st.name}", Toast.LENGTH_SHORT).show()
+                showFontPanel()
+            })
+        }
+
+        // ===== Custom fonts =====
+        val all = FontManager.all(context)
+        val custom = all.filter { !it.builtIn }
+        if (custom.isNotEmpty()) {
+            root.addView(sectionHeader("Custom fonts (${custom.size})"))
+            val activePath = FontManager.activePath(context)
+            custom.forEach { f ->
+                root.addView(fontRow(f, activePath == f.path) {
+                    FontManager.setActive(context, f.path)
+                    reload()
+                    Toast.makeText(context, "Font: ${f.name}", Toast.LENGTH_SHORT).show()
+                    showFontPanel()
+                })
+            }
+        }
+
+        // ===== Footer =====
+        root.addView(TextView(context).apply {
+            text = "Tip: change the active font from Settings → Theme tab"
+            setTextColor(Color.LTGRAY); textSize = 10f
+            setPadding(dp(6), dp(8), dp(6), dp(4))
+        })
+
+        // ===== BACK ROW =====
+        root.addView(pillBtn("⌨ Back to keyboard") { showKeysPanel() },
+            LayoutParams(LayoutParams.MATCH_PARENT, dp(40)).apply { topMargin = dp(8) })
+
+        scroll.addView(root)
+        panelContainer.addView(scroll, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
+    }
+
     private fun pillBtn(label: String, onClick: () -> Unit): TextView = TextView(context).apply {
         text = label
         setTextColor(theme.keyText)
@@ -2328,125 +2426,6 @@ class KeyboardView(
         }
         popupRef[0] = popup
         try { popup.showAtLocation(this, Gravity.CENTER, 0, -dp(40)) } catch (_: Throwable) { }
-    }
-
-    private fun showFontPicker(anchor: View) {
-        val all: List<FontEntry> = FontManager.all(context)
-        val activePath = FontManager.activePath(context)
-
-        val container = ScrollView(context).apply {
-            setBackgroundColor(theme.keyboardBg)
-            setPadding(dp(8), dp(8), dp(8), dp(8))
-        }
-        val list = LinearLayout(context).apply { orientation = VERTICAL }
-
-        // Bold / Italic toggles row
-        val toggleRow = LinearLayout(context).apply {
-            orientation = HORIZONTAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, dp(40))
-        }
-        val boldOn = prefs.getBoolean(SettingsStore.KEY_FONT_BOLD, false)
-        val italicOn = prefs.getBoolean(SettingsStore.KEY_FONT_ITALIC, false)
-        val popupRef = arrayOfNulls<PopupWindow>(1)
-        toggleRow.addView(makePill(if (boldOn) "Bold ✓" else "Bold ✗") {
-            prefs.edit().putBoolean(SettingsStore.KEY_FONT_BOLD, !boldOn).apply()
-            reload()
-            popupRef[0]?.dismiss()
-        }, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
-        toggleRow.addView(makePill(if (italicOn) "Italic ✓" else "Italic ✗") {
-            prefs.edit().putBoolean(SettingsStore.KEY_FONT_ITALIC, !italicOn).apply()
-            reload()
-            popupRef[0]?.dismiss()
-        }, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
-        toggleRow.addView(makePill("Default") {
-            FontManager.setActive(context, null)
-            prefs.edit()
-                .putBoolean(SettingsStore.KEY_FONT_BOLD, false)
-                .putBoolean(SettingsStore.KEY_FONT_ITALIC, false)
-                .apply()
-            reload()
-            Toast.makeText(context, "Font reset to system default", Toast.LENGTH_SHORT).show()
-            popupRef[0]?.dismiss()
-        }, LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
-        list.addView(toggleRow)
-
-        // ============ Output styles (Unicode) ============
-        // The .ttf files below only change how the keyboard ITSELF looks.
-        // Chat apps (WhatsApp, Insta, Messenger, etc.) draw incoming text
-        // with their own typeface, so a .ttf cannot influence what the
-        // recipient sees. Only Unicode variant letters travel intact.
-        // → Pick an Output Style here to make typed text actually look fancy
-        //   in any chat app. Reset by picking "Normal".
-        list.addView(sectionHeader("Output style (works in chat apps)"))
-        val activeStyleId = prefs.getString(SettingsStore.KEY_FONT_STYLE, "normal")
-        // Use STYLES_ALL (native Unicode styles + one entry per built-in
-        // typeface). The typeface-named entries map each font to its
-        // closest Unicode transform so picking "Lobster · Script" from
-        // here actually produces script-styled text in WhatsApp / Insta
-        // etc., instead of falling back to the chat app's default font.
-        UnicodeFonts.STYLES_ALL.forEach { st ->
-            list.addView(unicodeStyleRow(st, st.id == activeStyleId) {
-                UnicodeFonts.setActive(context, st.id)
-                Toast.makeText(context, "Output style: ${st.name}", Toast.LENGTH_SHORT).show()
-                popupRef[0]?.dismiss()
-            })
-        }
-
-        // ===== Keyboard typeface section (39 built-in fonts) — REMOVED =====
-        // The bundled fonts used to be listed here as a separate "Keyboard
-        // typeface" section so the user could change how the keys themselves
-        // are drawn. Per user request the entire list was hidden because the
-        // same 39 entries are already exposed (mapped to their closest
-        // Unicode equivalents) in the "Output style (works in chat apps)"
-        // section above — keeping both produced 39 lines of duplicates the
-        // user had to scroll past every time they opened the picker.
-        //
-        // BuiltInFonts.ALL is intentionally left intact: UnicodeFonts builds
-        // its TYPEFACE_STYLES list from it, FontManager.byPath() still uses
-        // it to render the user's existing saved keyboard typeface (so a
-        // selection made before this UI cleanup keeps drawing the same way),
-        // and the "Default" pill in the toggle row above can still reset the
-        // keyboard back to system Roboto. Custom .ttf files the user uploads
-        // themselves are still listed below.
-
-        val custom = all.filter { !it.builtIn }
-        if (custom.isNotEmpty()) {
-            list.addView(sectionHeader("Custom fonts (${custom.size})"))
-            custom.forEach { f ->
-                list.addView(fontRow(f, activePath == f.path) {
-                    FontManager.setActive(context, f.path)
-                    reload()
-                    Toast.makeText(context, "Font: ${f.name}", Toast.LENGTH_SHORT).show()
-                    popupRef[0]?.dismiss()
-                })
-            }
-        }
-
-        // Footer note
-        val note = TextView(context).apply {
-            text = "Tip: change the active font from Settings → Theme tab"
-            setTextColor(Color.LTGRAY); textSize = 10f
-            setPadding(dp(6), dp(8), dp(6), dp(4))
-        }
-        list.addView(note)
-
-        container.addView(list)
-
-        val popupWidth = (resources.displayMetrics.widthPixels * 0.92f).toInt()
-        val popupHeight = (resources.displayMetrics.heightPixels * 0.55f).toInt()
-        val popup = PopupWindow(container, popupWidth, popupHeight, true).apply {
-            elevation = dp(8).toFloat()
-            isOutsideTouchable = true
-            setBackgroundDrawable(GradientDrawable().apply {
-                setColor(theme.keyboardBg)
-                cornerRadius = dp(12).toFloat()
-                setStroke(dp(1), theme.accent)
-            })
-        }
-        popupRef[0] = popup
-        try {
-            popup.showAtLocation(this, Gravity.CENTER, 0, -dp(40))
-        } catch (_: Throwable) { /* if anchor not attached yet */ }
     }
 
     private fun fontRow(f: FontEntry, isActive: Boolean, onTap: () -> Unit): LinearLayout {

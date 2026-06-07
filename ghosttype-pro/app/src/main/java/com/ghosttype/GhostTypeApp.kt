@@ -150,9 +150,9 @@ class GhostTypeApp : Application() {
         val prefs = com.ghosttype.utils.SettingsStore.prefs(this)
         val DEFAULTS_KEY = "defaults_v13_applied"
         if (prefs.getBoolean(DEFAULTS_KEY, false)) return
-        com.ghosttype.utils.ThemeManager.setTheme(this, "dark_modern")
+        com.ghosttype.utils.ThemeManager.setTheme(this, "full_white")
         prefs.edit()
-            .putString(com.ghosttype.utils.SettingsStore.KEY_THEME, "dark_modern")
+            .putString(com.ghosttype.utils.SettingsStore.KEY_THEME, "full_white")
             .putString(com.ghosttype.utils.SettingsStore.KEY_BG_IMAGE_URI, "")
             .putInt(com.ghosttype.utils.SettingsStore.KEY_BG_IMAGE_OPACITY, 100)
             .putBoolean(com.ghosttype.utils.SettingsStore.KEY_BG_SHOW_BORDERS, false)
