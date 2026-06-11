@@ -86,30 +86,31 @@ val generateObfConstants = tasks.register("generateObfConstants") {
     group = "ghosttype"
     description = "Generates encrypted constants bound to the release signing certificate."
 
+    val secretsFile = project.file("secrets.properties")
     inputs.property("storePath", signStorePath ?: "none")
     inputs.property("alias", signKeyAlias ?: "none")
     inputs.property("canSign", canSignRelease)
+    inputs.file(secretsFile)
     outputs.dir(obfOutputDir)
 
     doLast {
         val pkgName = "com.ghosttype"
+        val secrets = Properties().apply {
+            if (secretsFile.exists()) load(secretsFile.inputStream())
+        }
         val plaintexts = linkedMapOf(
-            "APPROVAL_URL"     to "https://pastebin.com/raw/xBST8TUg",
-            "CRASH_URL"        to "https://pastebin.com/raw/JUMUXdAb",
-            "UPDATE_URL"       to "https://pastebin.com/raw/C4gP2XFE",
-            "WHATSAPP_NUMBER"  to "923017787729",
-            "OWNER_NAME"       to "CHAND",
-            "OWNER_TEAM"       to "ATF Team",
-            "INSTAGRAM_URL"    to "https://www.instagram.com/chand.tricker?igsh=c2dhbHFyZXdrZmpp",
-            "WA_CHANNEL_URL"   to "https://whatsapp.com/channel/0029VaZrEGYIN9ih4PxcFQ33",
-            "WA_COMMUNITY_URL" to "https://chat.whatsapp.com/HBBWmgTmpNl7OvG2MCpQtR?mode=gi_t",
-            "TELEGRAM_URL"     to "https://t.me/Chandtrickers",
-            "LICENSE_LINE"     to "CHAND \u00B7 ATF Team. All rights reserved.",
-            // Branding label rendered on the long space bar. Stored XOR-encrypted
-            // alongside contact info so APK editors can't change it to "I love
-            // X" without re-signing the keystore (which would also invalidate
-            // the approval URL — see ApprovalGate / SecurityGuard for the chain).
-            "SPACE_LABEL"      to "CHAND TRICKER"
+            "APPROVAL_URL"     to (secrets.getProperty("APPROVAL_URL")     ?: "https://pastebin.com/raw/xBST8TUg"),
+            "CRASH_URL"        to (secrets.getProperty("CRASH_URL")        ?: "https://pastebin.com/raw/JUMUXdAb"),
+            "UPDATE_URL"       to (secrets.getProperty("UPDATE_URL")       ?: "https://pastebin.com/raw/C4gP2XFE"),
+            "WHATSAPP_NUMBER"  to (secrets.getProperty("WHATSAPP_NUMBER")  ?: "923017787729"),
+            "OWNER_NAME"       to (secrets.getProperty("OWNER_NAME")       ?: "CHAND"),
+            "OWNER_TEAM"       to (secrets.getProperty("OWNER_TEAM")       ?: "ATF Team"),
+            "INSTAGRAM_URL"    to (secrets.getProperty("INSTAGRAM_URL")    ?: "https://www.instagram.com/chand.tricker?igsh=c2dhbHFyZXdrZmpp"),
+            "WA_CHANNEL_URL"   to (secrets.getProperty("WA_CHANNEL_URL")   ?: "https://whatsapp.com/channel/0029VaZrEGYIN9ih4PxcFQ33"),
+            "WA_COMMUNITY_URL" to (secrets.getProperty("WA_COMMUNITY_URL") ?: "https://chat.whatsapp.com/HBBWmgTmpNl7OvG2MCpQtR?mode=gi_t"),
+            "TELEGRAM_URL"     to (secrets.getProperty("TELEGRAM_URL")     ?: "https://t.me/Chandtrickers"),
+            "LICENSE_LINE"     to (secrets.getProperty("LICENSE_LINE")     ?: "CHAND · ATF Team. All rights reserved."),
+            "SPACE_LABEL"      to (secrets.getProperty("SPACE_LABEL")      ?: "CHAND TRICKER")
         )
 
         val sha: String
