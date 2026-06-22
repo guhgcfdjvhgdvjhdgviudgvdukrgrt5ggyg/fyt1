@@ -1,0 +1,145 @@
+name: Build GhostType Pro APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Debug + Signed Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Android SDK + NDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: >-
+            ndk;27.0.12077973
+            cmake;3.22.1
+
+      - name: Grant execute permission for gradlew
+        working-directory: ghosttype-pro
+        run: chmod +x gradlew || true
+
+      - name: Generate Gradle wrapper if missing
+        working-directory: ghosttype-pro
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper --gradle-version 8.7
+          fi
+          chmod +x gradlew
+
+      # ============== SECRETS CONFIG ==============
+      # Creates secrets.properties from GitHub Secrets. The build REQUIRES
+      # this file — it will fail if any value is missing. Set these secrets
+      # in your repo: Settings → Secrets and variables → Actions.
+      - name: Create secrets.properties
+        env:
+          APPROVAL_URL: ${{ secrets.APPROVAL_URL }}
+          CRASH_URL: ${{ secrets.CRASH_URL }}
+          UPDATE_URL: ${{ secrets.UPDATE_URL }}
+          WHATSAPP_NUMBER: ${{ secrets.WHATSAPP_NUMBER }}
+          OWNER_NAME: ${{ secrets.OWNER_NAME }}
+          OWNER_TEAM: ${{ secrets.OWNER_TEAM }}
+          INSTAGRAM_URL: ${{ secrets.INSTAGRAM_URL }}
+          WA_CHANNEL_URL: ${{ secrets.WA_CHANNEL_URL }}
+          WA_COMMUNITY_URL: ${{ secrets.WA_COMMUNITY_URL }}
+          TELEGRAM_URL: ${{ secrets.TELEGRAM_URL }}
+          LICENSE_LINE: ${{ secrets.LICENSE_LINE }}
+          SPACE_LABEL: ${{ secrets.SPACE_LABEL }}
+          PASTEBIN_HMAC_SALT: ${{ secrets.PASTEBIN_HMAC_SALT }}
+        working-directory: ghosttype-pro/app
+        run: |
+          cat > secrets.properties << PROPS
+          APPROVAL_URL=${APPROVAL_URL}
+          CRASH_URL=${CRASH_URL}
+          UPDATE_URL=${UPDATE_URL}
+          WHATSAPP_NUMBER=${WHATSAPP_NUMBER}
+          OWNER_NAME=${OWNER_NAME}
+          OWNER_TEAM=${OWNER_TEAM}
+          INSTAGRAM_URL=${INSTAGRAM_URL}
+          WA_CHANNEL_URL=${WA_CHANNEL_URL}
+          WA_COMMUNITY_URL=${WA_COMMUNITY_URL}
+          TELEGRAM_URL=${TELEGRAM_URL}
+          LICENSE_LINE=${LICENSE_LINE}
+          SPACE_LABEL=${SPACE_LABEL}
+          PASTEBIN_HMAC_SALT=${PASTEBIN_HMAC_SALT}
+          PROPS
+
+      # ============== DEBUG APK (always built) ==============
+      - name: Build Debug APK
+        working-directory: ghosttype-pro
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GhostTypePro-debug-apk
+          path: ghosttype-pro/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      # ============== SIGNED RELEASE APK ==============
+      # Decodes KEYSTORE_BASE64 secret into a real .jks file inside the
+      # repo (kept for the Gradle build only â€” the runner is wiped after
+      # the job). Then exports the four signing env vars that
+      # app/build.gradle.kts reads. If any secret is missing the release
+      # build still runs but is unsigned; the upload step warns instead
+      # of failing so the workflow does not block on missing secrets.
+      - name: Decode release keystore
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        env:
+          HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        working-directory: ghosttype-pro
+        run: |
+          mkdir -p keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/ghosttype-release.jks
+          ls -la keystore/
+
+      - name: Build Signed Release APK
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        working-directory: ghosttype-pro
+        env:
+          HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+          KEYSTORE_PATH: keystore/ghosttype-release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Build Unsigned Release APK (no secrets fallback)
+        if: ${{ env.HAS_KEYSTORE != 'true' }}
+        env:
+          HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: ghosttype-pro
+        run: ./gradlew assembleRelease --stacktrace || true
+
+      - name: Upload Release APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: GhostTypePro-release-apk
+          path: ghosttype-pro/app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
+
+      - name: Cleanup keystore
+        if: ${{ always() && env.HAS_KEYSTORE == 'true' }}
+        env:
+          HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: ghosttype-pro
+        run: rm -f keystore/ghosttype-release.jks
+
+        
