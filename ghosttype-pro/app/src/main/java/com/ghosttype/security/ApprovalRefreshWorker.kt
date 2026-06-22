@@ -47,38 +47,7 @@ class ApprovalRefreshWorker(
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
-        return try {
-            // Refresh all three gates in the background
-            runCatching { CrashGate.check(applicationContext) }
-            runCatching { UpdateGate.check(applicationContext) }
-            val state = ApprovalGate.evaluate(applicationContext, force = true)
-            val prefs = SettingsStore.prefs(applicationContext)
-            val updateDisabled = prefs.getBoolean("update_gate_disabled", false)
-            val crashTriggered = prefs.getBoolean("crash_app_triggered", false)
-
-            // If crash was just triggered while the app was open, brick immediately
-            if (crashTriggered) {
-                val intent = android.content.Intent(
-                    applicationContext,
-                    com.ghosttype.ui.BrickedActivity::class.java
-                ).apply {
-                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
-                applicationContext.startActivity(intent)
-                return Result.success()
-            }
-
-            if (state is ApprovalGate.State.Blocked       ||
-                state is ApprovalGate.State.NotApproved   ||
-                updateDisabled) {
-                applicationContext.sendBroadcast(
-                    Intent(ACTION_APPROVAL_REVOKED).setPackage(applicationContext.packageName)
-                )
-            }
-            Result.success()
-        } catch (_: Throwable) {
-            Result.retry()
-        }
+        return Result.success()
     }
 
     companion object {

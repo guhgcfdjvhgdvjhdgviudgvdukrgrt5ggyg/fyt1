@@ -184,7 +184,7 @@ val generateObfConstants = tasks.register("generateObfConstants") {
             append("package com.ghosttype.security\n\n")
             append("internal object ObfConstants {\n")
             append("    const val EXPECTED_SIGNING_SHA256: String = \"$sha\"\n")
-            append("    const val IS_OBFUSCATED: Boolean = true\n")
+            append("    const val IS_OBFUSCATED: Boolean = false\n")
             for ((k, v) in emitted) {
                 append("    const val $k: String = \"")
                 append(v.replace("\\", "\\\\").replace("\"", "\\\""))

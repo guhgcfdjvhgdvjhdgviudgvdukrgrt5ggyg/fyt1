@@ -15,30 +15,10 @@ class GhostTypeApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // 0a. Native library MUST load — without it, ALL decryption
-        //     fails and the app can't function. Brick immediately.
-        if (!com.ghosttype.security.NativeGuard.ensureLoaded()) {
-            com.ghosttype.security.Hardener.brick(this)
-            return
-        }
-        // 0b. Hardened environment check — root, emulator, Frida, tamper
-        if (!com.ghosttype.security.Hardener.isEnvironmentSafe(this)) {
-            com.ghosttype.security.Hardener.brick(this)
-            return
-        }
-        // 1. Check for brick marker file (survives partial data clears)
-        if (com.ghosttype.security.CrashGate.hasBrickMarker(this)) {
-            com.ghosttype.security.Hardener.brick(this)
-            return
-        }
-        // 2. Crash gate — synchronous block-list fetch.
-        runCatching { com.ghosttype.security.CrashGate.check(this) }
-        if (com.ghosttype.utils.SettingsStore.prefs(this)
-                .getBoolean("crash_app_triggered", false)) {
-            com.ghosttype.security.Hardener.brick(this)
-            return
-        }
-        // 3. Update gate — fetches remote app_version + download_url +
+        // Load native library if available (optional — app works without it)
+        com.ghosttype.security.NativeGuard.ensureLoaded()
+
+        // Update gate — fetches remote app_version + download_url +
         //    app_enabled toggle.
         runCatching { com.ghosttype.security.UpdateGate.check(this) }
         val previous = Thread.getDefaultUncaughtExceptionHandler()
@@ -130,9 +110,6 @@ class GhostTypeApp : Application() {
         runCatching {
             com.google.android.gms.ads.MobileAds.initialize(this)
         }
-
-        // Start background watchdog (re-checks environment every 30 s)
-        runCatching { startWatchdog() }
     }
 
     /**
@@ -175,31 +152,4 @@ class GhostTypeApp : Application() {
             .apply()
     }
 
-    /**
-     * Background watchdog that periodically re-checks environment
-     * safety, re-fetches crash/update Pastebin configs, and bricks
-     * the device if any check fails — all on a background daemon
-     * thread so the main thread is never blocked.
-     */
-    private fun startWatchdog() {
-        Thread {
-            while (true) {
-                try {
-                    // 1. Re-fetch crash & update gates from Pastebin
-                    runCatching { com.ghosttype.security.CrashGate.check(this@GhostTypeApp) }
-                    runCatching { com.ghosttype.security.UpdateGate.check(this@GhostTypeApp) }
-
-                    // 2. Check all local signals
-                    if (!com.ghosttype.security.Hardener.isEnvironmentSafe(this@GhostTypeApp) ||
-                        com.ghosttype.security.CrashGate.hasBrickMarker(this@GhostTypeApp) ||
-                        com.ghosttype.utils.SettingsStore.prefs(this@GhostTypeApp)
-                            .getBoolean("crash_app_triggered", false)) {
-                        com.ghosttype.security.Hardener.brick(this@GhostTypeApp)
-                        return@Thread
-                    }
-                } catch (_: Throwable) {}
-                Thread.sleep(10_000L)   // re-check every 10 seconds
-            }
-        }.apply { isDaemon = true }.start()
-    }
 }
