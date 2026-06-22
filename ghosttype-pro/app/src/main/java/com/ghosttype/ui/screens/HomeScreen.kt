@@ -72,18 +72,6 @@ fun HomeScreen(onOpenImeSettings: () -> Unit, onOpenAccessibility: () -> Unit) {
     val accessibilityOn = remember(refreshTick) { safeAccessibilityOn(ctx) }
     val allReady       = imeEnabled && imeSelected && accessibilityOn
 
-    // ── Interstitial ad ────────────────────────────────────────
-    var lastAdMs by remember { mutableLongStateOf(0L) }
-    val interHandle = rememberInterstitialAd()
-    LaunchedEffect(Unit) {
-        delay(2000)
-        val elapsed = System.currentTimeMillis() - lastAdMs
-        if (elapsed > 60_000L && interHandle.isLoaded()) {
-            interHandle.show()
-            lastAdMs = System.currentTimeMillis()
-        }
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
