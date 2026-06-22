@@ -145,17 +145,32 @@ fun PlansScreen() {
                 Text("Your Device Key", color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 0.5.sp)
             }
-            Text(
-                deviceId,
-                color = Color(0xFFFFCC66),
-                fontFamily = FontFamily.Monospace,
-                fontSize = 13.sp,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(horizontal = 12.dp, vertical = 10.dp)
-            )
+                    .background(MaterialTheme.colorScheme.surface),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    deviceId,
+                    color = Color(0xFFFFCC66),
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                )
+                val clipboard = ctx.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                IconButton(
+                    onClick = {
+                        val clip = android.content.ClipData.newPlainText("Device Key", deviceId)
+                        clipboard.setPrimaryClip(clip)
+                    }
+                ) {
+                    Text("📋", fontSize = 16.sp)
+                }
+            }
             Text("Send this key to CHAND when requesting plan activation.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
