@@ -49,6 +49,8 @@ private val PLANS = listOf(
         listOf("Everything in Monthly", "Save Rs 30", "Best value"), featured = true),
     Plan("⚡", null,     "Half Year", "6 Months", "Rs 250",  Orange,
         listOf("Everything in Quarterly", "Save Rs 50", "Early access")),
+    Plan("📆", null,     "1 Year",    "12 Months","Rs 500",  Orange,
+        listOf("Everything in Half Year", "Save Rs 250", "Best long-term value")),
     Plan("👑", "BEST",   "Lifetime",  "Forever",  "Rs 500",  Gold,
         listOf("Everything, forever", "One-time payment", "All updates free"), featured = true),
 )
