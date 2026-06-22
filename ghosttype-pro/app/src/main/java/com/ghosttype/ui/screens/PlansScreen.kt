@@ -72,29 +72,27 @@ fun PlansScreen() {
     val prefs    = remember { SettingsStore.prefs(ctx) }
     val deviceId = remember { DeviceId.get(ctx) }
 
-    val githubPlan = remember {
-        prefs.getString(SettingsStore.KEY_GITHUB_APPROVED_PLAN, "") ?: ""
-    }
-    val githubLockedPlan = remember(githubPlan) {
-        PLANS.find { it.name.equals(githubPlan, ignoreCase = true) }
+    var tick by remember { mutableStateOf(0) }
+    DisposableEffect(Unit) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            tick++
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    var selectedPlan by remember {
-        mutableStateOf(
-            if (githubPlan.isNotBlank()) githubLockedPlan
-            else prefs.getString(SettingsStore.KEY_ACTIVE_PLAN_NAME, "")?.let { saved ->
-                PLANS.find { it.name == saved }
-            }
-        )
-    }
-    val userName = remember { prefs.getString(SettingsStore.KEY_PLANS_USER_NAME, "") ?: "" }
-
-    val planStartedMs = remember { prefs.getLong(SettingsStore.KEY_PLAN_STARTED_MS, 0L) }
+    if (tick > -1) {}  // force recomposition when prefs change
+    val githubPlan = prefs.getString(SettingsStore.KEY_GITHUB_APPROVED_PLAN, "") ?: ""
+    val githubLockedPlan = PLANS.find { it.name.equals(githubPlan, ignoreCase = true) }
+    val selectedPlan = if (githubPlan.isNotBlank()) githubLockedPlan
+        else prefs.getString(SettingsStore.KEY_ACTIVE_PLAN_NAME, "")?.let { saved ->
+            PLANS.find { it.name == saved }
+        }
+    val userName = prefs.getString(SettingsStore.KEY_PLANS_USER_NAME, "") ?: ""
+    val planStartedMs = prefs.getLong(SettingsStore.KEY_PLAN_STARTED_MS, 0L)
 
     var nowMs by remember { mutableStateOf(System.currentTimeMillis()) }
-    val expiryMs = remember(selectedPlan) {
-        prefs.getLong(SettingsStore.KEY_PLAN_EXPIRY_MS, 0L)
-    }
+    val expiryMs = prefs.getLong(SettingsStore.KEY_PLAN_EXPIRY_MS, 0L)
     val isLifetime  = selectedPlan?.name == "Lifetime"
     val remainingMs = if (isLifetime || expiryMs <= 0L) Long.MAX_VALUE else expiryMs - nowMs
     val planExpired = !isLifetime && expiryMs > 0L && remainingMs <= 0L

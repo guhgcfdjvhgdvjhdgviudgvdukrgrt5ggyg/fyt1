@@ -172,7 +172,7 @@ object ApprovalGate {
                                 appPrefs.edit()
                                     .putLong(SettingsStore.KEY_PLAN_EXPIRY_MS, 0L)
                                     .putString(SettingsStore.KEY_ACTIVE_PLAN_DURATION, "Forever")
-                                    .putString(SettingsStore.KEY_ACTIVE_PLAN_PRICE, "Rs 500")
+                                    .putString(SettingsStore.KEY_ACTIVE_PLAN_PRICE, "$20")
                                     .apply()
                             } else {
                                 appPrefs.edit()
@@ -262,7 +262,7 @@ object ApprovalGate {
         plan.equals("Monthly",   ignoreCase = true) -> 30L * 24 * 3600 * 1000
         plan.equals("Quarterly", ignoreCase = true) -> 90L * 24 * 3600 * 1000
         plan.equals("Half Year", ignoreCase = true) -> 180L * 24 * 3600 * 1000
-        plan.equals("Lifetime",  ignoreCase = true) -> -1L
+        plan.equals("1 Year",    ignoreCase = true) -> 365L * 24 * 3600 * 1000
         else                                         -> 30L * 24 * 3600 * 1000
     }
 
@@ -272,18 +272,18 @@ object ApprovalGate {
         plan.equals("Monthly",   ignoreCase = true) -> "1 Month"
         plan.equals("Quarterly", ignoreCase = true) -> "3 Months"
         plan.equals("Half Year", ignoreCase = true) -> "6 Months"
-        plan.equals("Lifetime",  ignoreCase = true) -> "Forever"
+        plan.equals("1 Year",    ignoreCase = true) -> "12 Months"
         else                                         -> "30 Days"
     }
 
     private fun planPrice(plan: String): String = when {
         plan.equals("Test",      ignoreCase = true) -> "FREE"
         plan.equals("Trial",     ignoreCase = true) -> "FREE"
-        plan.equals("Monthly",   ignoreCase = true) -> "Rs 50"
-        plan.equals("Quarterly", ignoreCase = true) -> "Rs 120"
-        plan.equals("Half Year", ignoreCase = true) -> "Rs 250"
-        plan.equals("Lifetime",  ignoreCase = true) -> "Rs 500"
-        else                                         -> "Rs 50"
+        plan.equals("Monthly",   ignoreCase = true) -> "$0.5"
+        plan.equals("Quarterly", ignoreCase = true) -> "$1"
+        plan.equals("Half Year", ignoreCase = true) -> "$2"
+        plan.equals("1 Year",    ignoreCase = true) -> "$3.5"
+        else                                         -> "$0.5"
     }
 
     private fun name(s: State): String = when (s) {
