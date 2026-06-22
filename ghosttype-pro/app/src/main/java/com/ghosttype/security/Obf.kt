@@ -12,7 +12,9 @@ internal object Obf {
         if (NativeGuard.ensureLoaded()) {
             return try {
                 NativeGuard.nativeDecrypt(ctx, encrypted)
-            } catch (_: Throwable) {}
+            } catch (_: Throwable) {
+                encrypted
+            }
         }
         return encrypted
     }
