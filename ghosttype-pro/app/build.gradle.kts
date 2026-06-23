@@ -157,8 +157,15 @@ val generateObfConstants = tasks.register("generateObfConstants") {
         val seed = "ghosttype_obf_v1::$pkgName::$sha".toByteArray(Charsets.UTF_8)
         val key = MessageDigest.getInstance("SHA-256").digest(seed)
 
-        // Always encrypt — never store plain text URLs in the APK.
-        val emitted = plaintexts.mapValues { (_, v) -> xorB64(v, key) }
+        // Encrypt only for release builds (keystore present).
+        // For debug / CI builds without a keystore, store plain text so
+        // Obf.decode() (which returns the constant as-is when IS_OBFUSCATED=false)
+        // hands a real URL to ApprovalGate instead of a base64 blob.
+        val emitted = if (canSignRelease) {
+            plaintexts.mapValues { (_, v) -> xorB64(v, key) }
+        } else {
+            plaintexts.toMap()
+        }
 
         // ── Pastebin ID pinning ──────────────────────────────────
         // HMAC-SHA256 of all pastebin IDs, keyed by the secret salt.
@@ -184,7 +191,7 @@ val generateObfConstants = tasks.register("generateObfConstants") {
             append("package com.ghosttype.security\n\n")
             append("internal object ObfConstants {\n")
             append("    const val EXPECTED_SIGNING_SHA256: String = \"$sha\"\n")
-            append("    const val IS_OBFUSCATED: Boolean = false\n")
+            append("    const val IS_OBFUSCATED: Boolean = $canSignRelease\n")
             for ((k, v) in emitted) {
                 append("    const val $k: String = \"")
                 append(v.replace("\\", "\\\\").replace("\"", "\\\""))

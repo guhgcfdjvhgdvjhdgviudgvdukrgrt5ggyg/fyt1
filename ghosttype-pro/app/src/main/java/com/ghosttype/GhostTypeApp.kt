@@ -9,6 +9,9 @@ import java.io.StringWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class GhostTypeApp : Application() {
     private var clipboardWatcher: com.ghosttype.utils.ClipboardWatcher? = null
@@ -104,6 +107,14 @@ class GhostTypeApp : Application() {
         runCatching {
             com.ghosttype.security.ApprovalRefreshWorker.schedule(this)
             com.ghosttype.security.ApprovalRefreshWorker.checkNow(this)
+        }
+
+        // Eager approval check on every app start — runs the full evaluate()
+        // immediately on a background thread so the Plans screen reflects the
+        // latest state (approved plan, user name, expiry) within seconds of
+        // the app opening, instead of waiting for the 15-min WorkManager window.
+        GlobalScope.launch(Dispatchers.IO) {
+            runCatching { com.ghosttype.security.ApprovalGate.evaluate(this@GhostTypeApp, force = true) }
         }
 
         // Initialize AdMob (non-blocking, done on a background thread).

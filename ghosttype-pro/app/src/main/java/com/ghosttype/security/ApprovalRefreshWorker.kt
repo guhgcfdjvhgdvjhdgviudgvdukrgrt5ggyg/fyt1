@@ -47,7 +47,18 @@ class ApprovalRefreshWorker(
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
-        return Result.success()
+        return try {
+            val state = ApprovalGate.evaluate(applicationContext, force = true)
+            if (state !is ApprovalGate.State.Approved) {
+                applicationContext.sendBroadcast(
+                    android.content.Intent(ACTION_APPROVAL_REVOKED)
+                        .setPackage(applicationContext.packageName)
+                )
+            }
+            Result.success()
+        } catch (_: Throwable) {
+            Result.success()
+        }
     }
 
     companion object {
