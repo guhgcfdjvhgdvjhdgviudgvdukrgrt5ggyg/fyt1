@@ -1733,7 +1733,7 @@ class KeyboardView(
         }
 
         val mathOn = prefs.getBoolean(SettingsStore.KEY_MATH_ENABLED, false)
-        val mathCount = prefs.getInt(SettingsStore.KEY_MATH_COUNT, 1).coerceIn(1, 50)
+        val mathCount = prefs.getInt(SettingsStore.KEY_MATH_COUNT, 3).coerceIn(1, 50)
 
         // ===== HEADER =====
         val header = TextView(context).apply {
@@ -1794,7 +1794,7 @@ class KeyboardView(
         }
 
         val minusBtn = bigBtn("−", theme.keyBg) {
-            val v = (prefs.getInt(SettingsStore.KEY_MATH_COUNT, 1) - 1).coerceAtLeast(1)
+            val v = (prefs.getInt(SettingsStore.KEY_MATH_COUNT, 3) - 1).coerceAtLeast(1)
             prefs.edit().putInt(SettingsStore.KEY_MATH_COUNT, v).apply(); rebuildMath()
         }
         val countLabel = TextView(context).apply {
@@ -1806,7 +1806,7 @@ class KeyboardView(
             layoutParams = LayoutParams(0, LayoutParams.MATCH_PARENT, 1.2f)
         }
         val plusBtn = bigBtn("+", theme.keyBg) {
-            val v = (prefs.getInt(SettingsStore.KEY_MATH_COUNT, 1) + 1).coerceAtMost(50)
+            val v = (prefs.getInt(SettingsStore.KEY_MATH_COUNT, 3) + 1).coerceAtMost(50)
             prefs.edit().putInt(SettingsStore.KEY_MATH_COUNT, v).apply(); rebuildMath()
         }
 

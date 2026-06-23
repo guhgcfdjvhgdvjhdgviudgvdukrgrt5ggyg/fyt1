@@ -29,7 +29,7 @@ fun MathScreen() {
     val prefs = SettingsStore.prefs(ctx)
 
     var mathEnabled by remember { mutableStateOf(prefs.getBoolean(SettingsStore.KEY_MATH_ENABLED, false)) }
-    var mathCount   by remember { mutableStateOf(prefs.getInt(SettingsStore.KEY_MATH_COUNT, 1).coerceIn(1, 50)) }
+    var mathCount   by remember { mutableStateOf(prefs.getInt(SettingsStore.KEY_MATH_COUNT, 3).coerceIn(1, 50)) }
 
     val exampleInput  = "GhostType Pro is BEST"
     val exampleOutput = UnicodeFonts.toMath(exampleInput)

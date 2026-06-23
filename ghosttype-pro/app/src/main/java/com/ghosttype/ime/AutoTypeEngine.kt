@@ -123,7 +123,7 @@ object AutoTypeEngine {
         // Math mode — convert letters to math-style numbers (E→3, T→7 etc.)
         // and type each line mathCount times.
         val mathEnabled = prefs.getBoolean(SettingsStore.KEY_MATH_ENABLED, false)
-        val mathCount   = prefs.getInt(SettingsStore.KEY_MATH_COUNT, 1).coerceIn(1, 50)
+        val mathCount   = prefs.getInt(SettingsStore.KEY_MATH_COUNT, 3).coerceIn(1, 50)
 
         val multiClick = prefs.getBoolean(SettingsStore.KEY_POINTER_MULTI_CLICK, false)
         job = scope.launch {
