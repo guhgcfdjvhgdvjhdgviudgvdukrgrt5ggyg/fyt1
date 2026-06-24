@@ -130,7 +130,7 @@ fun PlansScreen() {
         // ── Page title ─────────────────────────────────────────
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("Plans", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.ExtraBold, fontSize = 26.sp)
-            Text("Choose a plan and send your request to CHAND for activation.",
+            Text("Choose a plan and send your request to NOMI TRICKER for activation.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
         }
 
@@ -178,7 +178,7 @@ fun PlansScreen() {
                     Text("📋", fontSize = 16.sp)
                 }
             }
-            Text("Send this key to CHAND when requesting plan activation.",
+            Text("Send this key to NOMI TRICKER when requesting plan activation.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
 
@@ -304,7 +304,7 @@ fun PlansScreen() {
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text("✅", fontSize = 14.sp)
-                        Text("Approved & locked by CHAND", color = Green, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Approved & locked by NOMI TRICKER", color = Green, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
 

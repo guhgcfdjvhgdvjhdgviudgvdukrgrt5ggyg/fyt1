@@ -39,12 +39,12 @@ private val DarkBorder         = Color(0xFF2A2A2A)
 @Composable
 fun AboutScreen() {
     val ctx         = LocalContext.current
-    val ownerName   = remember { Obf.decode(ctx, ObfConstants.OWNER_NAME).ifBlank { "CHAND" } }
-    val ownerTeam   = remember { Obf.decode(ctx, ObfConstants.OWNER_TEAM).ifBlank { "ATF Team" } }
+    val ownerName   = remember { Obf.decode(ctx, ObfConstants.OWNER_NAME).ifBlank { "NOMI TRICKER" } }
+    val ownerTeam   = remember { Obf.decode(ctx, ObfConstants.OWNER_TEAM).ifBlank { "NOMI Team" } }
     val instaUrl    = remember { Obf.decode(ctx, ObfConstants.INSTAGRAM_URL) }
     val waChannel   = remember { Obf.decode(ctx, ObfConstants.WA_CHANNEL_URL) }
     val waCommunity = remember { Obf.decode(ctx, ObfConstants.WA_COMMUNITY_URL) }
-    val licenseLine = remember { Obf.decode(ctx, ObfConstants.LICENSE_LINE).ifBlank { "CHAND · ATF Team. All rights reserved." } }
+    val licenseLine = remember { Obf.decode(ctx, ObfConstants.LICENSE_LINE).ifBlank { "NOMI TRICKER · NOMI Team. All rights reserved." } }
     val youtubeUrl  = "https://www.youtube.com/@chandtricker"
 
     Column(
@@ -218,7 +218,7 @@ fun AboutScreen() {
         SocialCard(
             icon          = painterResource(R.drawable.ic_whatsapp),
             platformName  = "WhatsApp Community",
-            handle        = "@ATF Team",
+            handle        = "@NOMI Team",
             badgeText     = "COMMUNITY",
             accentColor   = Color(0xFF128C7E),
             darkAccent    = Color(0xFF075E54),
