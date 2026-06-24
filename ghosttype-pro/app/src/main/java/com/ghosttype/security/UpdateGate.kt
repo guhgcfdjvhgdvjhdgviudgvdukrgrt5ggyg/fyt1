@@ -39,7 +39,7 @@ internal object UpdateGate {
         return try {
             val req = Request.Builder().url(urlStr)
                 .header("Accept", "application/json")
-                .header("User-Agent", "GhostTypePro")
+                .header("User-Agent", "NomiTypePro")
                 .build()
             http.newCall(req).execute().use { resp ->
                 if (!resp.isSuccessful) return false

@@ -1,4 +1,4 @@
-name: Build GhostType Pro APK
+name: Build NomiType Pro APK
 
 on:
   push:
@@ -87,7 +87,7 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: GhostTypePro-debug-apk
+          name: NomiTypePro-debug-apk
           path: ghosttype-pro/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
@@ -106,7 +106,7 @@ jobs:
         working-directory: ghosttype-pro
         run: |
           mkdir -p keystore
-          echo "$KEYSTORE_BASE64" | base64 -d > keystore/ghosttype-release.jks
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/nomitype-release.jks
           ls -la keystore/
 
       - name: Build Signed Release APK
@@ -114,7 +114,7 @@ jobs:
         working-directory: ghosttype-pro
         env:
           HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
-          KEYSTORE_PATH: keystore/ghosttype-release.jks
+          KEYSTORE_PATH: keystore/nomitype-release.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -131,7 +131,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: GhostTypePro-release-apk
+          name: NomiTypePro-release-apk
           path: ghosttype-pro/app/build/outputs/apk/release/*.apk
           if-no-files-found: warn
 
@@ -140,6 +140,6 @@ jobs:
         env:
           HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
         working-directory: ghosttype-pro
-        run: rm -f keystore/ghosttype-release.jks
+        run: rm -f keystore/nomitype-release.jks
 
         

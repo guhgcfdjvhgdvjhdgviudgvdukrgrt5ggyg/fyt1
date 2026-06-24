@@ -20,7 +20,7 @@ import com.ghosttype.utils.SettingsStore
  *     connected, without needing the heavier GhostTypeAccessibilityService.
  *
  * In Android Accessibility Settings this shows up as a SEPARATE entry
- * ("GhostType Pointer") distinct from "GhostType Pro", so the user can
+ * ("GhostType Pointer") distinct from "NomiType Pro", so the user can
  * grant only gesture-dispatch permission without window-content reading.
  */
 class GhostTypePointerService : AccessibilityService() {

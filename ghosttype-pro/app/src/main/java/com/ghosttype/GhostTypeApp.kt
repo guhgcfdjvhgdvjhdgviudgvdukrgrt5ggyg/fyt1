@@ -31,7 +31,7 @@ class GhostTypeApp : Application() {
                 e.printStackTrace(PrintWriter(sw))
                 val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
                 val text = buildString {
-                    append("===== GhostType Pro Crash =====\n")
+                    append("===== NomiType Pro Crash =====\n")
                     append("Time: ").append(ts).append("\n")
                     append("Thread: ").append(t.name).append("\n")
                     append("Device: ").append(android.os.Build.MANUFACTURER).append(" ")

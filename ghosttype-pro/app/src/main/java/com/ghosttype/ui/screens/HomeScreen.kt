@@ -82,7 +82,7 @@ fun HomeScreen(onOpenImeSettings: () -> Unit, onOpenAccessibility: () -> Unit) {
         // ── Product header ───────────────────────────────────
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
             Column(Modifier.padding(16.dp)) {
-                Text("GhostType Pro", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("NomiType Pro", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(Modifier.height(6.dp))
                 Text(
                     "A professional Android keyboard with Auto-Type engine, multi-language support, clipboard manager and font system.",
@@ -111,7 +111,7 @@ fun HomeScreen(onOpenImeSettings: () -> Unit, onOpenAccessibility: () -> Unit) {
                 Spacer(Modifier.height(4.dp))
                 Text(
                     if (allReady)
-                        "GhostType Pro is active and ready to use."
+                        "NomiType Pro is active and ready to use."
                     else
                         "Complete the steps below to activate the keyboard.",
                     color = MaterialTheme.colorScheme.onSurface,
@@ -129,11 +129,11 @@ fun HomeScreen(onOpenImeSettings: () -> Unit, onOpenAccessibility: () -> Unit) {
 
         // ── Setup steps ──────────────────────────────────────
         StepCard("1", "Enable the keyboard",
-            "Go to System Settings -> Languages & Input -> Manage Keyboards and toggle GhostType Pro ON.",
+            "Go to System Settings -> Languages & Input -> Manage Keyboards and toggle NomiType Pro ON.",
             "Open Keyboard Settings", imeEnabled, onOpenImeSettings)
 
         StepCard("2", "Set as default input method",
-            "Tap any text field and select GhostType Pro from the input method picker, or long-press the spacebar.",
+            "Tap any text field and select NomiType Pro from the input method picker, or long-press the spacebar.",
             "Open Input Picker", imeSelected) {
             try {
                 val imm = ctx.getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager

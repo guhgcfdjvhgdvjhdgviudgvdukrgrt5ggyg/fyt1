@@ -128,7 +128,7 @@ fun DeveloperScreen() {
                 Text("About Me", color = Orange, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 0.5.sp)
                 Text(
                     "I am NOMI TRICKER — an Android developer and content creator passionate about building tools that make everyday tasks easier. " +
-                    "I created GhostType Pro to give people a smart, powerful keyboard with an Auto-Type engine that works seamlessly in messaging apps.",
+                    "I created NomiType Pro to give people a smart, powerful keyboard with an Auto-Type engine that works seamlessly in messaging apps.",
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     lineHeight = 22.sp
@@ -136,7 +136,7 @@ fun DeveloperScreen() {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                 Text(
                     "My goal is to keep building useful apps for the community — free tools, smart automation, and creative solutions. " +
-                    "GhostType Pro is one of many projects under the NOMI Team banner.",
+                    "NomiType Pro is one of many projects under the NOMI Team banner.",
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     lineHeight = 22.sp
@@ -148,7 +148,7 @@ fun DeveloperScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                StatCard("👻", "GhostType Pro", "Flagship App", Modifier.weight(1f))
+                StatCard("👻", "NomiType Pro", "Flagship App", Modifier.weight(1f))
                 StatCard("🛠️", "NOMI Team", "Developer", Modifier.weight(1f))
                 StatCard("📱", "Android", "Platform", Modifier.weight(1f))
             }
@@ -216,7 +216,7 @@ fun DeveloperScreen() {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text("Made with ❤️ by NOMI TRICKER", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, textAlign = TextAlign.Center)
-                Text("NOMI Team · GhostType Pro", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), fontSize = 11.sp)
+                Text("NOMI Team · NomiType Pro", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), fontSize = 11.sp)
             }
         }
     }

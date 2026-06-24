@@ -24,7 +24,7 @@ class GhostTypeIMEService : InputMethodService() {
      */
     private fun makeImeLockView(): View {
         val tv = android.widget.TextView(this).apply {
-            text = "🔒  GhostType Pro is locked\n\n" +
+            text = "🔒  NomiType Pro is locked\n\n" +
                     "Tap here to open GhostType and send your\n" +
                     "device ID to the developer for approval."
             setPadding(48, 64, 48, 64)

@@ -122,7 +122,7 @@ class MainActivity : ComponentActivity() {
             android.util.Log.e("GhostTypeMain", "setContent failed", t)
             // Fallback minimal UI so the app does not die silently.
             val tv = android.widget.TextView(this).apply {
-                text = "GhostType Pro\n\nUI failed to initialize:\n${t.javaClass.simpleName}: ${t.message}\n\nPlease share crash log."
+                text = "NomiType Pro\n\nUI failed to initialize:\n${t.javaClass.simpleName}: ${t.message}\n\nPlease share crash log."
                 setPadding(40, 80, 40, 40)
                 setTextColor(android.graphics.Color.WHITE)
                 setBackgroundColor(android.graphics.Color.parseColor("#0D0D0D"))
@@ -258,7 +258,7 @@ fun AppRoot(
             ) {
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "GhostType Pro",
+                    "NomiType Pro",
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)
@@ -381,7 +381,7 @@ fun AppRoot(
                     },
                     title = {
                         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
-                            Text("GhostType Pro", fontWeight = FontWeight.Bold)
+                            Text("NomiType Pro", fontWeight = FontWeight.Bold)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(

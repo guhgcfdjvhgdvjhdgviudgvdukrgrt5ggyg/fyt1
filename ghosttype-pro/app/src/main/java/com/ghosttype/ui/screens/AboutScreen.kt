@@ -84,7 +84,7 @@ fun AboutScreen() {
                 }
 
                 Text(
-                    "GhostType Pro",
+                    "NomiType Pro",
                     color = Orange,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 24.sp,
@@ -207,7 +207,7 @@ fun AboutScreen() {
         SocialCard(
             icon          = painterResource(R.drawable.ic_whatsapp),
             platformName  = "WhatsApp Channel",
-            handle        = "@GhostType Pro",
+            handle        = "@NomiType Pro",
             badgeText     = "CHANNEL",
             accentColor   = Color(0xFF25D366),
             darkAccent    = Color(0xFF128C7E),

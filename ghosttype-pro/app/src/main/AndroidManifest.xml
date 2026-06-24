@@ -24,7 +24,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.GhostTypePro">
+        android:theme="@style/Theme.NomiTypePro">
 
         <!-- Google Mobile Ads App ID -->
         <meta-data
@@ -34,7 +34,7 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.GhostTypePro">
+            android:theme="@style/Theme.NomiTypePro">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -53,10 +53,10 @@
                 android:resource="@xml/method" />
         </service>
 
-        <!-- GhostType Pro: window-content reading + gesture dispatch (Auto-Type send) -->
+        <!-- NomiType Pro: window-content reading + gesture dispatch (Auto-Type send) -->
         <service
             android:name=".ime.GhostTypeAccessibilityService"
-            android:label="GhostType Pro"
+            android:label="NomiType Pro"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>

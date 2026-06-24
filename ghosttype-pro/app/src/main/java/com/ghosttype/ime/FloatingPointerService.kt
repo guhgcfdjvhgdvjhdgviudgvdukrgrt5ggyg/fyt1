@@ -45,7 +45,7 @@ import kotlinx.coroutines.withContext
  *
  * Requires SYSTEM_ALERT_WINDOW (android.permission.SYSTEM_ALERT_WINDOW) — must be granted
  * by user via Settings.canDrawOverlays() flow.
- * Requires GhostType Pro or GhostType Pointer accessibility service for gesture dispatch.
+ * Requires NomiType Pro or GhostType Pointer accessibility service for gesture dispatch.
  */
 class FloatingPointerService : Service() {
 

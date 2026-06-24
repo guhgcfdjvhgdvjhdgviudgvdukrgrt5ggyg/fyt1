@@ -87,7 +87,7 @@ fun TasksDialog(onUnlocked: () -> Unit) {
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        "Unlock GhostType Pro",
+                        "Unlock NomiType Pro",
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 22.sp,
@@ -158,7 +158,7 @@ fun TasksDialog(onUnlocked: () -> Unit) {
                                 fontSize = 15.sp
                             )
                             Text(
-                                "Join GhostType Pro official channel",
+                                "Join NomiType Pro official channel",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp
                             )
@@ -342,7 +342,7 @@ fun TasksDialog(onUnlocked: () -> Unit) {
                         modifier = Modifier.fillMaxWidth().height(54.dp)
                     ) {
                         Text(
-                            if (ready) "🔓  Unlock GhostType Pro" else "Complete both tasks to unlock",
+                            if (ready) "🔓  Unlock NomiType Pro" else "Complete both tasks to unlock",
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 15.sp
                         )

@@ -3,7 +3,7 @@
     android:settingsActivity="com.ghosttype.ui.MainActivity"
     android:supportsSwitchingToNextInputMethod="true">
     <subtype
-        android:label="GhostType Pro"
+        android:label="NomiType Pro"
         android:imeSubtypeLocale=""
         android:imeSubtypeMode="keyboard"
         android:isAsciiCapable="true" />

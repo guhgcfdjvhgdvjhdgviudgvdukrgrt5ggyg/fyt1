@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Fetches the Pastebin-hosted approval list and decides whether the
- * current device is allowed to use GhostType Pro.
+ * current device is allowed to use NomiType Pro.
  *
  * The URL itself is XOR-encrypted with a key derived from the APK
  * signing cert (see [Obf]) — so a thief can't repackage the app to
@@ -129,7 +129,7 @@ object ApprovalGate {
             try {
                 val req = Request.Builder().url(urlStr)
                     .header("Accept", "application/json, text/plain, */*")
-                    .header("User-Agent", "GhostTypePro")
+                    .header("User-Agent", "NomiTypePro")
                     .build()
                 http().newCall(req).execute().use { resp ->
                     if (!resp.isSuccessful) {
