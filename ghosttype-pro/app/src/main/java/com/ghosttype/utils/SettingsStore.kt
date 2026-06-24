@@ -198,6 +198,22 @@ object SettingsStore {
      * Does NOT delete the Room clipboard DB — call resetClipboard() for that.
      */
     fun resetAll(ctx: Context) {
-        prefs(ctx).edit().clear().apply()
+        val p = prefs(ctx)
+        val savedThemeId    = p.getString(KEY_THEME, "")
+        val savedKeyBg      = p.getInt(KEY_KEY_BG, 0)
+        val savedKeyText    = p.getInt(KEY_KEY_TEXT, 0)
+        val savedKbBg       = p.getInt(KEY_KB_BG, 0)
+        val savedSuggBg     = p.getInt(KEY_SUGG_BG, 0)
+        val savedPressed    = p.getInt(KEY_PRESSED, 0)
+        p.edit().clear().apply()
+        if (savedThemeId.isNullOrEmpty()) return
+        val ed = p.edit()
+        ed.putString(KEY_THEME, savedThemeId)
+        if (savedKeyBg != 0)   ed.putInt(KEY_KEY_BG, savedKeyBg)
+        if (savedKeyText != 0) ed.putInt(KEY_KEY_TEXT, savedKeyText)
+        if (savedKbBg != 0)    ed.putInt(KEY_KB_BG, savedKbBg)
+        if (savedSuggBg != 0)  ed.putInt(KEY_SUGG_BG, savedSuggBg)
+        if (savedPressed != 0) ed.putInt(KEY_PRESSED, savedPressed)
+        ed.apply()
     }
 }
