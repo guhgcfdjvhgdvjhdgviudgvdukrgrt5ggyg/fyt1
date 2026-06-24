@@ -22,9 +22,6 @@ import com.ghosttype.ime.AutoTypeEngine
 import com.ghosttype.ime.AutoTypeForegroundService
 import com.ghosttype.ime.FloatingPointerService
 import com.ghosttype.utils.SettingsStore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 private val RedReset = Color(0xFFFF3B30)
 private val Orange   = Color(0xFFFF8C00)
@@ -84,7 +81,6 @@ fun ResetScreen() {
                             "⌨️ Keyboard size, font, haptic, sound",
                             "🤖 Auto-Type settings & target name",
                             "🎯 Pointer position & settings",
-                            "📋 Clipboard auto-delete & settings",
                             "👤 Plans, name, active plan",
                             "🔧 All other app preferences"
                         ).forEach { item ->
@@ -107,13 +103,6 @@ fun ResetScreen() {
                         try { AutoTypeForegroundService.stop(ctx) } catch (_: Throwable) {}
                         try { FloatingPointerService.stop(ctx) } catch (_: Throwable) {}
                         SettingsStore.resetAll(ctx)
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                com.ghosttype.data.db.AppDatabase.get(ctx).clipboardDao().let { dao ->
-                                    dao.allOnce().forEach { dao.delete(it) }
-                                }
-                            } catch (_: Throwable) {}
-                        }
                         showDialog = false
                         resetDone  = true
                     },
@@ -167,7 +156,6 @@ fun ResetScreen() {
                 "⌨️" to "Keyboard size, font, haptic, sound",
                 "🤖" to "Auto-Type settings & target name",
                 "🎯" to "Pointer position & settings",
-                "📋" to "Clipboard auto-delete & settings",
                 "👤" to "Plans, name, active plan",
                 "🔧" to "All other app preferences"
             ).forEach { (emoji, label) ->
