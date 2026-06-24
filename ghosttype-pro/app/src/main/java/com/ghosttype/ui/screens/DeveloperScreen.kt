@@ -49,12 +49,11 @@ fun DeveloperScreen() {
                         )
                     )
                 )
-                .padding(top = 40.dp, bottom = 32.dp),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 18.dp, vertical = 32.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 // Avatar — loads logo from CDN, falls back to "CT" text
                 Box(
@@ -87,7 +86,7 @@ fun DeveloperScreen() {
                     )
                 }
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         "CHAND TRICKER",
                         color = MaterialTheme.colorScheme.onBackground,
@@ -98,8 +97,7 @@ fun DeveloperScreen() {
                     Text(
                         "Android Developer & Content Creator",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center
+                        fontSize = 13.sp
                     )
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
