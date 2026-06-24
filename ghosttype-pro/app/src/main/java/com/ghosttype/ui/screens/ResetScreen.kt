@@ -77,7 +77,6 @@ fun ResetScreen() {
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
-                            "🎨 Theme, colors, background image",
                             "⌨️ Keyboard size, font, haptic, sound",
                             "🤖 Auto-Type settings & target name",
                             "🎯 Pointer position & settings",
@@ -152,7 +151,6 @@ fun ResetScreen() {
             Text("What will be reset", color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
             listOf(
-                "🎨" to "Theme, colors, background image",
                 "⌨️" to "Keyboard size, font, haptic, sound",
                 "🤖" to "Auto-Type settings & target name",
                 "🎯" to "Pointer position & settings",
